@@ -1,0 +1,43 @@
+airflow:
+  schedulers:
+    - name: affiliate-window-to-snowflake
+      id: affiliate-window-to-snowflake
+      schedule: 0 */6 * * *
+      start_date: 2021-01-10T12:00
+      command: 'curl https://girishcodealchemy-test.com/affiliate-window-to-snowflake -H "Authorization: bearer $(gcloud auth print-identity-token)"'
+      description: affiliate-window-to-snowflake
+
+    - name: box-product-info-to-snowflake
+      id: box-product-info-to-snowflake
+      schedule: 30 */23 * * *
+      start_date: 2021-01-10T12:00
+      command: 'curl https://girishcodealchemy-test.com/box-product-info-to-snowflake -H "Authorization: bearer $(gcloud auth print-identity-token)"'
+      description: box-product-info-to-snowflake
+
+    - name: facebook-ads-to-snowflake
+      id: facebook-ads-to-snowflake
+      schedule: 0 7 * * *
+      start_date: 2021-01-10T12:00
+      command: 'curl https://girishcodealchemy-test.com/facebook-ads-to-snowflake -H "Authorization: bearer $(gcloud auth print-identity-token)"'
+      description: facebook-ads-to-snowflake
+
+    - name: ga-bq-to-gcs-daily
+      id: ga-bq-to-gcs-daily
+      schedule: 0 14 * * *
+      start_date: 2021-01-10T12:00
+      command: 'curl https://girishcodealchemy-test.com/ga-bq-to-gcs-daily -H "Authorization: bearer $(gcloud auth print-identity-token)"'
+      description: ga-bq-to-gcs-daily
+
+    - name: google-ads-to-snowflake
+      id: google-ads-to-snowflake
+      schedule: 0 */6 * * *
+      start_date: 2021-01-10T12:00
+      command: 'curl https://girishcodealchemy-test.com/google-ads-to-snowflake -H "Authorization: bearer $(gcloud auth print-identity-token)"'
+      description: google-ads-to-snowflake
+
+    - name: seko-ftp-to-snowflake
+      id: seko-ftp-to-snowflake
+      schedule: 0 6 * * *
+      start_date: 2021-01-10T12:00
+      command: 'curl https://girishcodealchemy-test.com/seko-ftp-to-snowflake -H "Authorization: bearer $(gcloud auth print-identity-token)"'
+      description: seko-ftp-to-snowflake

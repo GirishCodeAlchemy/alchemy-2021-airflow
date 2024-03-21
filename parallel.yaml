@@ -1,0 +1,49 @@
+# Example Airflow DAG definition with parallel tasks
+dag:
+  dag_id: parallel_example
+  schedule_interval: '@daily'
+  start_date: 2024-03-20
+
+  tasks:
+    - task_id: start
+      operator: DummyOperator
+      priority_weight: 10
+      queue: default
+      retries: 3
+
+    - task_id: task-group-0
+      operator: BashOperator
+      bash_command: "echo 'Task 0'"
+
+    - task_id: task-group1
+      task_group:
+          - task_id: task_1
+            operator: BashOperator
+            bash_command: "echo 'Task 1'"
+          - task_id: task_2
+            operator: BashOperator
+            bash_command: "echo 'Task 2'"
+          - task_id: task_3
+            operator: BashOperator
+            bash_command: "echo 'Task 3'"
+
+    - task_id: task-group2
+      task_group:
+          - task_id: task1_1
+            operator: BashOperator
+            bash_command: "echo 'Task1 1'"
+          - task_id: task1_2
+            operator: BashOperator
+            bash_command: "echo 'Task1 2'"
+          - task_id: task1_3
+            operator: BashOperator
+            bash_command: "echo 'Task1 3'"
+
+    - task_id: end
+      operator: DummyOperator
+      priority_weight: 1
+      queue: default
+      retries: 3
+
+  dependencies:
+    - start >> parallel_task_group >> end

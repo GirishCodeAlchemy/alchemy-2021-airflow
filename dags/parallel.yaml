@@ -17,12 +17,43 @@ dag:
 
     - task_id: task-group1
       task_group:
+          - task_id: task_1
+            task_group:
+              - task_id: task1_1
+                operator: BashOperator
+                bash_command: "echo 'Task1 1'"
+              - task_id: task1_2
+                operator: BashOperator
+                bash_command: "echo 'Task1 2'"
+              - task_id: task1_3
+                operator: BashOperator
+                bash_command: "echo 'Task1 3'"
           - task_id: task_2
-            operator: BashOperator
-            bash_command: "echo 'Task 2'"
+            task_group:
+              - task_id: task2_1
+                operator: BashOperator
+                bash_command: "echo 'Task2 1'"
+              - task_id: task2_2
+                operator: BashOperator
+                bash_command: "echo 'Task2 2'"
+              - task_id: task2_3
+                operator: BashOperator
+                bash_command: "echo 'Task2 3'"
           - task_id: task_3
             operator: BashOperator
             bash_command: "echo 'Task 3'"
+          - task_id: task_4
+            operator: BashOperator
+            bash_command: "echo 'Task 4'"
+          - task_id: task_5
+            task_group:
+              - task_id: task5_1
+                operator: BashOperator
+                bash_command: "echo 'Task5 1'"
+              - task_id: task5_2
+                operator: BashOperator
+                bash_command: "echo 'Task5 2'"
+
 
     - task_id: task-group2
       task_group:

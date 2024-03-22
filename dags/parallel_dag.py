@@ -6,7 +6,9 @@ from airflow import DAG
 from airflow.operators.bash_operator import BashOperator
 from airflow.operators.dummy_operator import DummyOperator
 from airflow.utils.task_group import TaskGroup
+from utils.logging import get_logging_client
 
+logging = get_logging_client()
 
 class DAGBuilder:
     def __init__(self, yaml_file):
@@ -48,27 +50,46 @@ class DAGBuilder:
     def create_task(self, task_info):
         task_id = task_info['task_id']
         operator = task_info['operator']
-        if operator == 'BashOperator':  # Handle BashOperator tasks
-            bash_command = task_info.get('bash_command')  # Retrieve bash_command if available
+        if operator == 'BashOperator':
+            bash_command = task_info.get('bash_command')
             task = BashOperator(
                 task_id=task_id,
                 bash_command=bash_command,
                 dag=self.dag
             )
-        else:  # Handle DummyOperator tasks
+        else:
             task = DummyOperator(
                 task_id=task_id,
                 dag=self.dag
             )
-        self.task_dict[task_id] = task
-        if task_id != 'start':  # Skip setting dependency for the start task
-            task >> self.task_dict['start']  # Set dependency flow from start task
+        return task_id, task
 
-    def create_task_group(self, task_group_info):
+    def create_child_task_group(self, task_group_info ):
         task_group_id = task_group_info['task_id']
         with TaskGroup(group_id=task_group_id, dag=self.dag) as task_group:
+            previous_dag = None
             for task_info in task_group_info['task_group']:
-                self.create_task(task_info)
+                _, task = self.create_task(task_info)
+                if previous_dag == None:
+                    previous_dag = task
+                else:
+                    previous_dag = previous_dag >> task
+                logging.info(f"previous_dag {previous_dag}")
+
+        return task_group
+
+    def create_task_group(self, task_group_info ):
+        task_group_id = task_group_info['task_id']
+        task_group_list = []
+
+        with TaskGroup(group_id=task_group_id, dag=self.dag) as task_group:
+            for task_info in task_group_info['task_group']:
+                if 'task_group' in task_info:
+                    task_group_list.append(self.create_child_task_group(task_info))
+                else:
+                    _, task = self.create_task(task_info)
+                    task_group_list.append(task)
+        logging.info(f"list of task group: {task_group_list}")
         return task_group
 
     def build(self):
@@ -77,15 +98,23 @@ class DAGBuilder:
         self.create_dag()
 
         tasks = self.dag_config['dag']['tasks']
+        previous_dag = None
         for task_info in tasks:
+            result_dag = None
             if 'task_group' in task_info:
-                self.create_task_group(task_info)
+                result_dag = self.create_task_group(task_info)
             else:
-                self.create_task(task_info)
+                task_id, result_dag = self.create_task(task_info)
+                self.task_dict[task_id] = result_dag
+            logging.info(f"---> previous_dag = {previous_dag}  -->  current task ={result_dag} , ")
+            if previous_dag == None:
+                previous_dag = result_dag
+            else:
+                previous_dag = previous_dag >> result_dag
 
+        logging.info('Task dictionary={}'.format(self.task_dict))
         return self.dag
 
-# Example usage:
 def create_dag_from_yaml(yaml_file):
     builder = DAGBuilder(yaml_file)
     return builder.build()
